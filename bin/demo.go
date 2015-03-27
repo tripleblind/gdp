@@ -7,72 +7,9 @@ import (
 	"log"
 	"math/big"
 	"net"
+
+	"github.com/usersjs/gdp"
 )
-
-type Guide struct {
-	ServerKey  []byte
-	SharedKeys [][]byte
-}
-
-func NewGuide() *Guide {
-	return &Guide{
-		SharedKeys: make([][]byte, Guides),
-	}
-}
-
-// verifies a HL and returns a HSOL
-func (g *Guide) Verify(h0, hL []byte, L int, lastM []byte, i [][]byte) ([]byte, error) {
-
-	var (
-		ax = net.ParseIP("127.0.0.1")
-		tl = 0
-	)
-
-	// f3 := nil
-	// f5 := nil
-
-	// let's assume it's verfied, compute hsol
-
-	hsol := g.withServer().F6(h0, ax, L, tl)
-
-	return hsol, nil
-
-	// {h0,hL,L,mL−1,i1,i2,...,iL} to the first stop tour
-
-}
-
-func (g *Guide) withGuide(idx int) HMAC {
-	return g.SharedKeys[idx]
-}
-
-func (g *Guide) withServer() HMAC {
-	return g.ServerKey
-}
-
-type Server struct {
-	SecretKey  []byte
-	SharedKeys [][]byte
-}
-
-func (s *Server) Verify(h0, hSol, t0, tL []byte, i1 int) error {
-
-	// var (
-	// 	ax = net.ParseIP("127.0.0.1")
-	// )
-
-	// f6 := s.withGuide(i1).Generate(h0, ax)
-
-	return nil
-
-}
-
-func (s *Server) withGuide(idx int) HMAC {
-	return s.SharedKeys[idx]
-}
-
-func (s *Server) withSecret() HMAC {
-	return s.SecretKey
-}
 
 const (
 	KeySize = 16
@@ -109,15 +46,15 @@ func keygen(size int) (buf []byte) {
 
 func main() {
 
-	server := &Server{
+	server := &gdp.Server{
 		SecretKey: keygen(KeySize),
 	}
 
-	guides := []*Guide{
-		NewGuide(),
-		NewGuide(),
-		NewGuide(),
-		NewGuide(),
+	guides := []*gdp.Guide{
+		gdp.NewGuide(Guides),
+		gdp.NewGuide(Guides),
+		gdp.NewGuide(Guides),
+		gdp.NewGuide(Guides),
 	}
 
 	for i, e := range guides {
@@ -149,8 +86,8 @@ func main() {
 
 		msg := []byte("this is a secret")
 
-		a := server.withGuide(i).generate(msg)
-		b := guides[i].withServer().generate(msg)
+		a := server.WithGuide(i).Generate(msg)
+		b := guides[i].WithServer().Generate(msg)
 
 		log.Printf("guide %d with server : %x == %x = %v",
 			i,
@@ -163,8 +100,8 @@ func main() {
 
 			if i != i2 {
 
-				a = guides[i].withGuide(i2).generate(msg)
-				b = guides[i2].withGuide(i).generate(msg)
+				a = guides[i].WithGuide(i2).Generate(msg)
+				b = guides[i2].WithGuide(i).Generate(msg)
 
 				log.Printf("guide %d with guide %d: %x == %x = %v",
 					i,
@@ -191,8 +128,8 @@ func main() {
 
 	log.Printf("[server] requesting tour of length %d, starting at %d", L, i1)
 
-	h0 := server.withSecret().F1(ax, L, i1, t0)
-	m0 := server.withSecret().F2(ax, L, i1, t0, h0)
+	h0 := server.WithSecret().F1(ax, L, i1, t0)
+	m0 := server.WithSecret().F2(ax, L, i1, t0, h0)
 
 	var (
 		allH [][]byte
@@ -227,8 +164,8 @@ func main() {
 
 	for {
 
-		h := guides[iS].withGuide(i1).F3(h0, ax, L, S, iS, iSp1)
-		m := guides[iS].withGuide(iSp1).F4(allM[len(allM)-1], ax, L, S, iS, iSp1, ts)
+		h := guides[iS].WithGuide(i1).F3(h0, ax, L, S, iS, iSp1)
+		m := guides[iS].WithGuide(iSp1).F4(allM[len(allM)-1], ax, L, S, iS, iSp1, ts)
 
 		log.Printf("[  tour] visiting stop %d at index %d (h: %x, m: %x)", S, iS, h, m)
 
@@ -243,7 +180,7 @@ func main() {
 
 	}
 
-	hl := F5(allH...)
+	hl := gdp.F5(allH...)
 
 	log.Printf("[client] tour complete, generating hl: %x", hl)
 
@@ -259,7 +196,7 @@ func main() {
 
 	// client passes hsol etc to the server
 
-	result := server.withGuide(i1).F6(h0, ax, L, 0)
+	result := server.WithGuide(i1).F6(h0, ax, L, 0)
 
 	log.Printf("[server] %x = %x == %v", hsol, result, bytes.Equal(hsol, result))
 
