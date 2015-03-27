@@ -13,7 +13,6 @@ import (
 
 const (
 	KeySize = 16
-	Guides  = 4
 )
 
 func dice(up int) int {
@@ -51,10 +50,10 @@ func main() {
 	}
 
 	guides := []*gdp.Guide{
-		gdp.NewGuide(Guides),
-		gdp.NewGuide(Guides),
-		gdp.NewGuide(Guides),
-		gdp.NewGuide(Guides),
+		gdp.NewGuide(gdp.North),
+		gdp.NewGuide(gdp.East),
+		gdp.NewGuide(gdp.South),
+		gdp.NewGuide(gdp.West),
 	}
 
 	for i, e := range guides {
@@ -121,8 +120,8 @@ func main() {
 
 	var (
 		ax = net.ParseIP("127.0.0.1")
-		L  = 3
-		i1 = dice(Guides)
+		L  = 10
+		i1 = dice(gdp.Guides)
 		t0 = 0
 	)
 
@@ -134,15 +133,16 @@ func main() {
 	var (
 		allH [][]byte
 		allM = [][]byte{m0}
+		allI []int
 	)
 
 	// begin the tour
 
 	var (
 		ts   = 0
-		S    = 1            // current stop
-		iS   = i1           // current index
-		iSp1 = dice(Guides) // successor index
+		S    = 1                // current stop
+		iS   = i1               // current index
+		iSp1 = dice(gdp.Guides) // successor index
 	)
 
 	next := func() bool {
@@ -155,7 +155,7 @@ func main() {
 		if S == L-1 {
 			iSp1 = i1
 		} else {
-			iSp1 = dice(Guides)
+			iSp1 = dice(gdp.Guides)
 		}
 
 		return next
@@ -167,10 +167,11 @@ func main() {
 		h := guides[iS].WithGuide(i1).F3(h0, ax, L, S, iS, iSp1)
 		m := guides[iS].WithGuide(iSp1).F4(allM[len(allM)-1], ax, L, S, iS, iSp1, ts)
 
-		log.Printf("[  tour] visiting stop %d at index %d (h: %x, m: %x)", S, iS, h, m)
+		log.Printf("[  tour] visiting stop %d at index %d (%s) (h: %x, m: %x)", S, iS, guides[iS].Name, h, m)
 
 		allH = append(allH, h)
 		allM = append(allM, m)
+		allI = append(allI, iS)
 
 		// TODO: verify TS
 
@@ -186,7 +187,7 @@ func main() {
 
 	// tour verifies this ...
 
-	hsol, err := guides[i1].Verify(h0, nil, L, nil, allM)
+	hsol, err := guides[i1].Verify(h0, nil, L, nil, allI)
 
 	if err != nil {
 		log.Fatal(err)
