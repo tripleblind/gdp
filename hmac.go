@@ -1,9 +1,11 @@
 package gdp
 
 import (
+	"crypto/hmac"
+	"crypto/sha1"
 	"encoding/binary"
 
-	"github.com/codahale/blake2"
+	// "github.com/codahale/blake2"
 )
 
 type HMAC []byte
@@ -69,7 +71,7 @@ func (h HMAC) F6(h0, ax []byte, L, tl int) []byte {
 
 func (h HMAC) Generate(parts ...[]byte) []byte {
 
-	hmac := blake2.NewKeyedBlake2B(h)
+	hmac := hmac.New(sha1.New, h)
 
 	for _, e := range parts {
 

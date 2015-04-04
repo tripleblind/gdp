@@ -47,12 +47,44 @@ func NewGuide(name Name) *Guide {
 	}
 }
 
-func (g *Guide) Visit() {
+func (g *Guide) Visit(ax []byte, r *Request) (*Reply, bool, error) {
+
+	// TODO: verify signature
+
+	// how?!?!?
+
+	// g.WithGuide(r.ISM1).F4(msm1, ax, L, s, is, isp1, ts)
+
+	// TODO: verify timestamp
+
+	var (
+		next  = r.S < r.L
+		isp1  int
+		reply = &Reply{
+			TS: 0,
+		}
+	)
+
+	if r.S == r.L-1 {
+		isp1 = r.I1
+	} else {
+		isp1 = dice(Guides)
+	}
+
+	reply.ISP1 = isp1
+
+	reply.HS = g.WithGuide(r.I1).F3(r.H0, ax, r.L, r.S, r.IS, isp1)
+
+	reply.MS = g.WithGuide(isp1).F4(r.MSM1, ax, r.L, r.S, r.IS, isp1, reply.TS)
+
+	log.Printf("[  tour] visiting stop %d at index %d (%s) (h: %x, m: %x)", r.S, r.IS, g.Name, reply.HS, reply.MS)
+
+	return reply, next, nil
 
 }
 
 // verifies a HL and returns a HSOL
-func (g *Guide) Verify(h0, hl []byte, L int, lastM []byte, i []int) ([]byte, error) {
+func (g *Guide) VerifyTour(h0, hl []byte, L int, lastM []byte, i []int) ([]byte, error) {
 
 	var (
 		ax = net.ParseIP("127.0.0.1")
