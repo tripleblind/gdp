@@ -3,7 +3,12 @@ package gdp
 import (
 	"crypto/rand"
 	"math/big"
+	"net"
 )
+
+func ClientIdentity(remoteAddr string) []byte {
+	return net.ParseIP(remoteAddr).To16()
+}
 
 func bdice(up, exclude int) int {
 

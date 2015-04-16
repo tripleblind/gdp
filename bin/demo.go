@@ -125,11 +125,13 @@ func init() {
 
 func main() {
 
+	server.TourLength = 10
+
 	// puzzle generation
 
 	var (
 		ax = net.ParseIP("127.0.0.1")
-		p  = server.NewPuzzle(ax, 10)
+		p  = server.NewPuzzle(ax)
 	)
 
 	log.Printf("[server] requesting tour of length %d, starting at %d", p.L, p.I1)
@@ -147,7 +149,7 @@ func main() {
 
 	for {
 
-		reply, next, _ := guides[IS].Visit(ax, &gdp.Request{
+		reply, next, err := guides[IS].Visit(ax, &gdp.Request{
 			H0:   p.H0,
 			L:    p.L,
 			S:    S,
@@ -157,6 +159,10 @@ func main() {
 			I1:   p.I1,
 			IS:   IS,
 		})
+
+		if err != nil {
+			panic(err)
+		}
 
 		allH = append(allH, reply.HS)
 		allI = append(allI, reply.ISP1)
