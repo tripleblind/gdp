@@ -34,12 +34,12 @@ func init() {
 		ServerKey: s2b(fmt.Sprintf("server+%s", name)),
 		SharedKeys: [][]byte{
 			s2b("north"),
-			// s2b("north"),
-			// s2b("north"),
-			// s2b("north"),
-			s2b("east"),
-			s2b("south"),
-			s2b("west"),
+			s2b("north"),
+			s2b("north"),
+			s2b("north"),
+			// s2b("east"),
+			// s2b("south"),
+			// s2b("west"),
 		},
 	}
 
@@ -49,9 +49,26 @@ func init() {
 
 func main() {
 
-	router := gin.Default()
+	router := gin.New()
+	router.Use(gin.Recovery())
 
 	router.GET("/verify", func(c *gin.Context) {
+
+		var tour gdp.Tour
+
+		if err := json.Unmarshal([]byte(c.Request.URL.Query().Get("t")), &tour); err != nil {
+			c.String(http.StatusBadRequest, "Unmarshaling error: %s", err)
+		} else {
+
+			ax := gdp.ClientIdentity(c.Request.RemoteAddr)
+
+			if err := guide.Verify(ax, &tour); err != nil {
+				c.String(http.StatusBadRequest, "Invalid solution: %s", err)
+			} else {
+				c.JSON(http.StatusOK, tour)
+			}
+
+		}
 
 	})
 
@@ -67,7 +84,7 @@ func main() {
 
 			ax := gdp.ClientIdentity(c.Request.RemoteAddr)
 
-			step, next, err := guide.VisitT(ax, &tour)
+			step, next, err := guide.Visit(ax, &tour)
 
 			if err != nil {
 				c.String(http.StatusBadRequest, "Invalid request: %s", err)
@@ -89,13 +106,17 @@ func main() {
 
 					step.Link = link.String()
 
-					c.JSON(200, step)
+					c.JSON(http.StatusSeeOther, step)
 
 					// c.Redirect(http.StatusTemporaryRedirect, link.String())
 
 				} else {
 
-					c.JSON(http.StatusOK, step)
+					link.Path = "verify"
+					step.Link = link.String()
+
+					c.JSON(http.StatusSeeOther, step)
+
 				}
 
 			}

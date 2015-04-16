@@ -28,31 +28,20 @@ func init() {
 		},
 	}
 
-	server.TourLength = 10
+	server.TourLength = 3
 
 }
 
 func main() {
 
-	router := gin.Default()
+	router := gin.New()
+	router.Use(gin.Recovery())
 
 	router.GET("/", func(c *gin.Context) {
 
 		ax := gdp.ClientIdentity(c.Request.RemoteAddr)
 
 		tour := server.NewTour(ax)
-
-		// puzzle := server.NewPuzzle(ax)
-
-		// req := gdp.Request{ // TODO: add to *Puzzle
-		// 	H0:   puzzle.H0,
-		// 	L:    puzzle.L,
-		// 	S:    1,
-		// 	TSM1: puzzle.T0,
-		// 	MSM1: puzzle.M0,
-		// 	I1:   puzzle.I1,
-		// 	IS:   puzzle.I1,
-		// }
 
 		out, _ := json.Marshal(tour)
 

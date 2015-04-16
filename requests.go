@@ -3,13 +3,14 @@ package gdp
 // TODO: client state MUST be checked with invariants (L == len())
 // TODO: limit memory consumption!
 
-type Tour struct {
+type Tour struct { // TODO: add unmarshalling routines to tour
 	H    [][]byte
 	M    [][]byte
 	T    []int
 	I    []int
 	L    int
 	S    int
+	Sol  []byte
 	Link string
 }
 
@@ -35,24 +36,4 @@ type Reply struct {
 	MS   []byte
 	ISP1 int
 	TS   int
-}
-
-type FinalRequest struct {
-	H0   []byte
-	HL   []byte
-	L    int
-	MLM1 []byte
-	I    []int
-}
-
-type FinalReply struct {
-	HSOL []byte
-}
-
-type Solution struct {
-	H0   []byte
-	HSOL []byte
-	T0   int
-	TL   int
-	I1   int
 }
