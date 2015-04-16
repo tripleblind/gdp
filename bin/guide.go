@@ -34,12 +34,9 @@ func init() {
 		ServerKey: s2b(fmt.Sprintf("server+%s", name)),
 		SharedKeys: [][]byte{
 			s2b("north"),
-			s2b("north"),
-			s2b("north"),
-			s2b("north"),
-			// s2b("east"),
-			// s2b("south"),
-			// s2b("west"),
+			s2b("east"),
+			s2b("south"),
+			s2b("west"),
 		},
 	}
 
@@ -65,7 +62,23 @@ func main() {
 			if err := guide.Verify(ax, &tour); err != nil {
 				c.String(http.StatusBadRequest, "Invalid solution: %s", err)
 			} else {
+
+				out, _ := json.Marshal(tour)
+
+				query := url.Values{}
+				query.Add("t", string(out))
+
+				link := url.URL{
+					Scheme:   "http",
+					Host:     fmt.Sprintf("127.0.0.1:%d", 9000),
+					Path:     "verify",
+					RawQuery: query.Encode(),
+				}
+
+				tour.Link = link.String()
+
 				c.JSON(http.StatusOK, tour)
+
 			}
 
 		}

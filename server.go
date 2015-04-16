@@ -1,5 +1,11 @@
 package gdp
 
+import (
+	"crypto/hmac"
+	"fmt"
+	"log"
+)
+
 type Server struct {
 	SecretKey  []byte
 	SharedKeys [][]byte
@@ -41,6 +47,35 @@ func (s *Server) NewTour(ax []byte) *Tour {
 	}
 
 	return t
+
+}
+
+func (s *Server) Verify(ax []byte, t *Tour) error {
+
+	h0 := s.WithSecret().F1(ax, t.L, t.I[0], t.T[0])
+
+	if !hmac.Equal(h0, t.H[0]) {
+		return fmt.Errorf("Invalid H0")
+	} else {
+		log.Println("H0 ok")
+	}
+
+	ts := 0
+
+	hsol := s.WithGuide(t.I[0]).F6(
+		t.H[0],
+		ax,
+		t.L,
+		ts,
+	)
+
+	if !hmac.Equal(hsol, t.Sol) {
+		return fmt.Errorf("Invalid hsol")
+	} else {
+		log.Println("hsol ok")
+	}
+
+	return nil
 
 }
 

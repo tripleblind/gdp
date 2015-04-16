@@ -50,8 +50,6 @@ func (g *Guide) Verify(ax []byte, tour *Tour) error {
 
 	for s := 1; s == tour.L; s++ {
 
-		// panic("THIS DOES NOT WORK")
-
 		h := g.WithGuide(tour.I[s]).F3(
 			tour.H[0],
 			ax,

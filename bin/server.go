@@ -37,6 +37,26 @@ func main() {
 	router := gin.New()
 	router.Use(gin.Recovery())
 
+	router.GET("/verify", func(c *gin.Context) {
+
+		var tour gdp.Tour
+
+		if err := json.Unmarshal([]byte(c.Request.URL.Query().Get("t")), &tour); err != nil {
+			c.String(http.StatusBadRequest, "Unmarshaling error: %s", err)
+		} else {
+
+			ax := gdp.ClientIdentity(c.Request.RemoteAddr)
+
+			if err := server.Verify(ax, &tour); err != nil {
+				c.JSON(http.StatusForbidden, err.Error())
+			} else {
+				c.String(http.StatusOK, "Welcome, friend!")
+			}
+
+		}
+
+	})
+
 	router.GET("/", func(c *gin.Context) {
 
 		ax := gdp.ClientIdentity(c.Request.RemoteAddr)
