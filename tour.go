@@ -1,4 +1,4 @@
-package gdp
+package tour
 
 // TODO: client state MUST be checked with invariants (L == len())
 // TODO: limit memory consumption!

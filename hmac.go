@@ -1,10 +1,9 @@
-package gdp
+package tour
 
 import (
 	"crypto/hmac"
 	"crypto/sha1"
 	"encoding/binary"
-
 	// "github.com/codahale/blake2"
 )
 

@@ -1,4 +1,4 @@
-package gdp
+package tour
 
 import (
 	"crypto/hmac"
